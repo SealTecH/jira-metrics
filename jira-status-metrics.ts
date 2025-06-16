@@ -9,6 +9,7 @@ import {BOARD_ID, EXCEL_FILE, SPRINT_IDS, STATUSES_TO_TRACK} from './config';
 import {JiraChangelogEntry, JiraIssue} from "./models";
 import * as fs from "node:fs";
 import Row from "exceljs/index";
+import { mean } from 'lodash-es';
 
 const authHeader = {
     headers: {
@@ -211,28 +212,34 @@ async function calculateSummary(workbook: ExcelJS.Workbook) {
     const summarySheet =workbook.getWorksheet(SUMMARY_SHEET_NAME)!;
     // не можем удалить существующий лист, тк он используется в графиках. но можем очистить его
     if (summarySheet) {
-        summarySheet.getRows(1, summarySheet.rowCount)!.forEach(row => row.values = []);
+       let existingRows =  summarySheet.getRows(1, summarySheet.rowCount);
+       if(existingRows){
+           existingRows.forEach(row => row.values = []);
+       }
     }
     
 
     // Заголовки
-    summarySheet.insertRow(1,['Sprint Name', ...filteredStatuses, 'AvgDuration']);
+    const headerRow = ['Sprint Name', ...filteredStatuses, 'AvgDuration'];
+    summarySheet.insertRow(1,headerRow);
 
     let sprintIndex = 1;
     for (const [sprint, statusMap] of sprintStatusMap.entries()) {
-        const row: (string | number)[] = [sprint];
+        console.log(sprint, statusMap);
+        const row: (string | number)[] = Array(filteredStatuses.length + 2).fill('');
+            row[0] = sprint;
         let total = 0;
 
         for (const status of allStatuses) {
             const durations = statusMap.get(status) || [];
-            const avg = durations.length ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
+            const avg =  durations.length ? mean(durations):0
             if(STATUSES_TO_TRACK.includes(status)) {
-                row.push(Number(avg.toFixed(2)));
+                row[headerRow.indexOf(status)] = Number(avg.toFixed(2));
             }
             total += avg;
         }
 
-        row.push(Number(total.toFixed(2)));
+        row[row.length - 1] = Number(total.toFixed(2));
         summarySheet.insertRow(sprintIndex+1,row);
         sprintIndex++;
     }

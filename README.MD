@@ -10,6 +10,6 @@ export const JIRA_API_TOKEN = ''; // Your API token here. You can generate it in
    export const BOARD_ID = '123'; // Replace with your actual board ID
    ```
 3. run `npm install` to install the required dependencies.
-4. OPTIONAL: if you want to generate metrics for specific sprints, run `npx ts-node retrieve-sprint-ids.ts`. Then put ids of sprints in `SPRINT_IDS` array in `config.ts` file.
+4. OPTIONAL: by default script takes active sprint. if you want to generate metrics for specific sprints, run `npx ts-node retrieve-sprint-ids.ts`. Then put ids of sprints in `SPRINT_IDS` array in `config.ts` file.
 5. Run `npx ts-node jira-status-metrics.ts` for running the script.
 6. Enjoy the metrics in file `output.xlsx` in the root directory of the project. (don't forget to enable automatic links update in Excel)
